@@ -2,7 +2,7 @@
 title: AgentHire Protocol
 emoji: 🤖
 colorFrom: purple
-colorTo: cyan
+colorTo: blue
 sdk: docker
 pinned: true
 license: mit
