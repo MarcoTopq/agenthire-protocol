@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentHire Protocol — Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.0/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #12121a;
+      --border:  #1e1e2e;
+      --accent:  #7c3aed;
+      --accent2: #06b6d4;
+      --green:   #10b981;
+      --yellow:  #f59e0b;
+      --red:     #ef4444;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+    /* Layout */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .logo   { font-size: 1.25rem; font-weight: 700; color: var(--accent2); letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    .badge  { background: var(--accent); color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; text-transform: uppercase; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .card-title { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .card-value { font-size: 2rem; font-weight: 700; }
+
+    /* Agent status boxes */
+    .agents-row { display: flex; gap: 12px; margin-bottom: 32px; }
+    .agent-box  { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .agent-name { font-weight: 600; margin-bottom: 4px; }
+    .agent-cap  { font-size: 0.75rem; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot.green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+    .dot.grey   { background: var(--muted); }
+
+    /* Query form */
+    .query-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+    .query-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--accent2); }
+    .input-row { display: flex; gap: 12px; }
+    input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color .2s; }
+    input[type="text"]:focus { border-color: var(--accent); }
+    .btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: opacity .2s; white-space: nowrap; }
+    .btn:hover { opacity: .85; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn.secondary { background: var(--border); }
+
+    /* Pipeline visualizer */
+    .pipeline { display: flex; align-items: center; gap: 8px; padding: 16px 0; margin-bottom: 16px; overflow-x: auto; }
+    .p-node { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 0.8rem; text-align: center; min-width: 120px; transition: all .3s; }
+    .p-node.active  { border-color: var(--accent); background: #1a0f3a; color: var(--accent2); }
+    .p-node.done    { border-color: var(--green); background: #0a1f15; color: var(--green); }
+    .p-arrow { color: var(--muted); font-size: 1.2rem; }
+
+    /* Result area */
+    .result-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .result-box pre { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6; color: var(--text); }
+
+    /* Task log */
+    .task-log { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .task-log h2 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--accent2); }
+    .task-item  { border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; }
+    .task-item:last-child { margin-bottom: 0; }
+    .tag { padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .tag.completed { background: #0a1f15; color: var(--green); border: 1px solid var(--green); }
+    .tag.running   { background: #1a0f3a; color: var(--accent2); border: 1px solid var(--accent2); }
+    .tag.error     { background: #1f0a0a; color: var(--red); border: 1px solid var(--red); }
+
+    .proof-hash { font-family: monospace; font-size: 0.7rem; color: var(--muted); }
+
+    /* Chain info */
+    .chain-info { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .chain-tag  { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; color: var(--muted); }
+    .chain-tag a { color: var(--accent2); text-decoration: none; }
+    .chain-tag a:hover { text-decoration: underline; }
+
+    .loading { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Agent<span>Hire</span> Protocol</div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <a href="https://sepolia.basescan.org/address/0x2aC7eF1FfF5b664715a31DfC241D94103B7CD5d2" target="_blank" class="badge" style="text-decoration:none">📄 Registry</a>
+    <a href="https://sepolia.basescan.org/address/0x0990A926Cc8C2Df752FeA22476b8fF520a532b6e" target="_blank" class="badge" style="text-decoration:none;background:var(--accent2);color:#000">💰 Escrow</a>
+    <span class="badge" style="background:#10b981">✓ Base Sepolia</span>
+    <span id="wallet-addr" style="font-size:.8rem;color:var(--muted)">Not connected</span>
+    <button class="btn secondary" onclick="connectWallet()" style="padding:8px 14px;font-size:.8rem">Connect Wallet</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="card">
+      <div class="card-title">Active Agents</div>
+      <div class="card-value" id="stat-agents">3</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tasks Completed</div>
+      <div class="card-value" id="stat-tasks">0</div>
+    </div>
+    <div class="card">
+      <div class="card-title">ETH Settled</div>
+      <div class="card-value" id="stat-eth">0.000</div>
+    </div>
+  </div>
+
+  <!-- Agent status -->
+  <div class="agents-row" id="agents-row">
+    <div class="agent-box" id="box-a">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="agent-name">🧠 Agent A — Orchestrator</div>
+        <span><span class="dot grey" id="dot-a"></span><span id="status-a" style="font-size:.75rem">checking...</span></span>
+      </div>
+      <div class="agent-cap">orchestration · task-decomposition · multi-agent-coordination</div>
+    </div>
+    <div class="agent-box" id="box-b">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="agent-name">🔍 Agent B — Data Fetcher</div>
+        <span><span class="dot grey" id="dot-b"></span><span id="status-b" style="font-size:.75rem">checking...</span></span>
+      </div>
+      <div class="agent-cap">web-search · data-fetch · url-scrape</div>
+    </div>
+    <div class="agent-box" id="box-c">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="agent-name">✍️ Agent C — Writer</div>
+        <span><span class="dot grey" id="dot-c"></span><span id="status-c" style="font-size:.75rem">checking...</span></span>
+      </div>
+      <div class="agent-cap">summarization · report-writing · text-analysis</div>
+    </div>
+  </div>
+
+  <!-- Query -->
+  <div class="query-section">
+    <h2>⚡ Send Task to Orchestrator</h2>
+    <div class="input-row">
+      <input type="text" id="query-input" placeholder="e.g. What is the future of AI agents on Ethereum?" value="What is the future of AI agents on Ethereum?" />
+      <button class="btn" id="run-btn" onclick="runOrchestration()">Run Agents</button>
+    </div>
+
+    <!-- Pipeline visualizer -->
+    <div class="pipeline" id="pipeline" style="display:none">
+      <div class="p-node" id="p-user">👤 User Query</div>
+      <div class="p-arrow">→</div>
+      <div class="p-node" id="p-a">🧠 Agent A</div>
+      <div class="p-arrow">→</div>
+      <div class="p-node" id="p-b">🔍 Agent B<br><small>web-search</small></div>
+      <div class="p-arrow">→</div>
+      <div class="p-node" id="p-c">✍️ Agent C<br><small>summarize</small></div>
+      <div class="p-arrow">→</div>
+      <div class="p-node" id="p-result">📄 Result</div>
+    </div>
+
+    <div id="result-area" style="display:none">
+      <div class="result-box">
+        <pre id="result-text"></pre>
+      </div>
+      <div class="chain-info" id="proof-area"></div>
+    </div>
+  </div>
+
+  <!-- Task Log -->
+  <div class="task-log">
+    <h2>📋 Task Log</h2>
+    <div id="task-list"><div style="color:var(--muted);font-size:.85rem">No tasks yet. Run the agents above!</div></div>
+  </div>
+
+</div>
+
+<script>
+  const RENDER_URL   = "https://agenthire-protocol.onrender.com";
+  const LOCAL_URL    = "http://localhost:8001";
+  const ORCHESTRATOR = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
+    ? LOCAL_URL : RENDER_URL + "/a";
+  const REGISTRY_ADDR = "0x2aC7eF1FfF5b664715a31DfC241D94103B7CD5d2";
+  const ESCROW_ADDR   = "0x0990A926Cc8C2Df752FeA22476b8fF520a532b6e";
+  const BASESCAN      = "https://sepolia.basescan.org";
+  let taskCount = 0;
+  let ethTotal  = 0;
+
+  // ── Agent status ──────────────────────────────────────────────
+  async function checkAgents() {
+    try {
+      const r = await fetch(`${ORCHESTRATOR}/status`);
+      const d = await r.json();
+      setDot("a", "online");
+      setDot("b", d.peers?.agentB?.status === "online" ? "online" : "offline");
+      setDot("c", d.peers?.agentC?.status === "online" ? "online" : "offline");
+    } catch {
+      setDot("a", "offline"); setDot("b", "offline"); setDot("c", "offline");
+    }
+  }
+
+  function setDot(id, state) {
+    const dot = document.getElementById(`dot-${id}`);
+    const lbl = document.getElementById(`status-${id}`);
+    dot.className = `dot ${state === "online" ? "green" : "grey"}`;
+    lbl.textContent = state;
+  }
+
+  // ── Orchestration ─────────────────────────────────────────────
+  async function runOrchestration() {
+    const query = document.getElementById("query-input").value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById("run-btn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading">⟳</span> Running...';
+
+    const pipeline = document.getElementById("pipeline");
+    const resultArea = document.getElementById("result-area");
+    pipeline.style.display = "flex";
+    resultArea.style.display = "none";
+
+    // animate pipeline
+    setPipelineStep("user");
+    await delay(300);
+    setPipelineStep("a");
+    await delay(400);
+    setPipelineStep("b");
+
+    try {
+      const r = await fetch(`${ORCHESTRATOR}/orchestrate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, budgetEth: 0.003 })
+      });
+      const data = await r.json();
+
+      setPipelineStep("c");
+      await delay(300);
+      setPipelineStep("result");
+      markPipelineDone();
+
+      // Show result
+      document.getElementById("result-text").textContent = data.finalReport;
+      resultArea.style.display = "block";
+
+      // Proof area
+      const proofHtml = data.subTasks.map(t =>
+        `<div class="chain-tag">✓ ${t.agent} · <span class="proof-hash">${(t.proof||"").slice(0,18)}…</span></div>`
+      ).join("") + `<div class="chain-tag">Session: <span class="proof-hash">${data.proof.slice(0,18)}…</span></div>`;
+      document.getElementById("proof-area").innerHTML = proofHtml;
+
+      // Update stats
+      taskCount += data.subTasks.length;
+      ethTotal  += 0.0015;
+      document.getElementById("stat-tasks").textContent = taskCount;
+      document.getElementById("stat-eth").textContent   = ethTotal.toFixed(4);
+
+      // Add to task log
+      addToLog(data);
+
+    } catch (e) {
+      document.getElementById("result-text").textContent = `Error: ${e.message}\n\nMake sure Agent A is running on port 8001`;
+      resultArea.style.display = "block";
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Run Agents";
+  }
+
+  // ── Pipeline animation ────────────────────────────────────────
+  const P_NODES = ["user","a","b","c","result"];
+  function setPipelineStep(step) {
+    P_NODES.forEach(n => {
+      const el = document.getElementById(`p-${n}`);
+      el.className = "p-node" + (n === step ? " active" : "");
+    });
+  }
+  function markPipelineDone() {
+    P_NODES.forEach(n => document.getElementById(`p-${n}`).className = "p-node done");
+  }
+
+  // ── Task log ──────────────────────────────────────────────────
+  function addToLog(data) {
+    const list = document.getElementById("task-list");
+    if (list.children[0]?.style.color) list.innerHTML = "";
+    data.subTasks.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "task-item";
+      div.innerHTML = `
+        <span class="tag completed">completed</span>
+        <span style="flex:1">${t.agent} — ${t.taskType}</span>
+        <span class="proof-hash">${(t.proof||"").slice(0,24)}…</span>
+      `;
+      list.prepend(div);
+    });
+  }
+
+  // ── Wallet ────────────────────────────────────────────────────
+  async function connectWallet() {
+    if (!window.ethereum) { alert("Install MetaMask!"); return; }
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer   = await provider.getSigner();
+    const addr     = await signer.getAddress();
+    document.getElementById("wallet-addr").textContent =
+      addr.slice(0,6) + "…" + addr.slice(-4);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ── Init ──────────────────────────────────────────────────────
+  checkAgents();
+  setInterval(checkAgents, 10000);
+</script>
+</body>
+</html>
