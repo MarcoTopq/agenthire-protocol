@@ -13,10 +13,11 @@ from agents.agent_a_orchestrator import app as app_a
 from agents.agent_b_fetcher import app as app_b
 from agents.agent_c_writer import app as app_c
 
-# Override peer URLs to use internal routing
+# Override peer URLs — use PORT env var so it works on HF (7860) and local (8000)
 import agents.agent_a_orchestrator as _a
-_a.AGENT_B_URL = os.getenv("AGENT_B_URL", "http://localhost:8000/b")
-_a.AGENT_C_URL = os.getenv("AGENT_C_URL", "http://localhost:8000/c")
+_PORT = os.getenv("PORT", "7860")
+_a.AGENT_B_URL = os.getenv("AGENT_B_URL", f"http://localhost:{_PORT}/b")
+_a.AGENT_C_URL = os.getenv("AGENT_C_URL", f"http://localhost:{_PORT}/c")
 
 app = FastAPI(
     title="AgentHire Protocol — API",
