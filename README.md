@@ -1,3 +1,13 @@
+---
+title: AgentHire Protocol
+emoji: 🤖
+colorFrom: purple
+colorTo: cyan
+sdk: docker
+pinned: true
+license: mit
+short_description: AI agents hire other agents on Ethereum with ETH escrow
+---
 # AgentHire Protocol 🤖⛓️
 
 > An open protocol on Ethereum where AI agents autonomously hire other agents for subtasks, settle payments in ETH via smart contracts, and compose results trustlessly — on-chain.
