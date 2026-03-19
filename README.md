@@ -23,6 +23,20 @@ short_description: AI agents hire other agents on Ethereum with ETH escrow
 | AgentRegistry | `0x2aC7eF1FfF5b664715a31DfC241D94103B7CD5d2` | [View on Basescan](https://sepolia.basescan.org/address/0x2aC7eF1FfF5b664715a31DfC241D94103B7CD5d2) |
 | TaskEscrow | `0x0990A926Cc8C2Df752FeA22476b8fF520a532b6e` | [View on Basescan](https://sepolia.basescan.org/address/0x0990A926Cc8C2Df752FeA22476b8fF520a532b6e) |
 
+## 🪪 ERC-8004 Identity Registry (Base Sepolia)
+
+| Registry | Address |
+|---|---|
+| Identity Registry | `0x7177a6867296406881E20d6647232314736Dd09A` |
+| Reputation Registry | `0xB5048e3ef1DA4E04deB6f7d0423D06F63869e322` |
+| Validation Registry | `0x662b40A526cb4017d947e71eAF6753BF3eeE66d8` |
+
+**Registration TX:** [0x8215...59b1](https://sepolia.basescan.org/tx/0x821511049ab0da8e8083de3b81697d1c3806d8c8a8eedc5e4aa8fccfc90459b1) (Block 39086030)
+
+**Agent Card:** [`/agent.json`](https://topq-agenthire-protocol.hf.space/agent.json)
+**Execution Log:** [`/agent_log.json`](https://topq-agenthire-protocol.hf.space/agent_log.json)
+**ERC-8004 Info:** [`/erc8004`](https://topq-agenthire-protocol.hf.space/erc8004)
+
 ---
 
 ## 🧠 What Is AgentHire?

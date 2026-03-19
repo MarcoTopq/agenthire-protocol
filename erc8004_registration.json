@@ -1,0 +1,9 @@
+{
+  "txHash": "0x821511049ab0da8e8083de3b81697d1c3806d8c8a8eedc5e4aa8fccfc90459b1",
+  "owner": "0xD7d0E5785Fca3021b1f0821932ED4509ec9bfcFF",
+  "agentURI": "https://topq-agenthire-protocol.hf.space/agent.json",
+  "registry": "0x7177a6867296406881E20d6647232314736Dd09A",
+  "network": "base-sepolia",
+  "block": 39086030,
+  "basescanTx": "https://sepolia.basescan.org/tx/0x821511049ab0da8e8083de3b81697d1c3806d8c8a8eedc5e4aa8fccfc90459b1"
+}

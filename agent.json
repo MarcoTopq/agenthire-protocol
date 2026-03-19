@@ -1,0 +1,86 @@
+{
+  "name": "AgentHire-Orchestrator",
+  "version": "1.0.0",
+  "description": "AI agent orchestrator that autonomously hires specialist sub-agents (Data Fetcher, Writer) for subtasks and settles payments trustlessly in ETH via smart contract escrow on Base Sepolia.",
+  "operator": {
+    "wallet": "0xD7d0E5785Fca3021b1f0821932ED4509ec9bfcFF",
+    "network": "base-sepolia",
+    "chainId": 84532
+  },
+  "endpoint": "https://topq-agenthire-protocol.hf.space/a",
+  "agentCardURI": "https://topq-agenthire-protocol.hf.space/agent.json",
+  "capabilities": [
+    "orchestration",
+    "task-decomposition",
+    "multi-agent-coordination",
+    "web-search",
+    "summarization",
+    "report-writing",
+    "on-chain-settlement"
+  ],
+  "taskCategories": [
+    "research",
+    "summarization",
+    "data-fetch",
+    "multi-step-pipeline"
+  ],
+  "pricing": {
+    "perTaskEth": 0.003,
+    "currency": "ETH"
+  },
+  "contracts": {
+    "agentRegistry": "0x2aC7eF1FfF5b664715a31DfC241D94103B7CD5d2",
+    "taskEscrow":    "0x0990A926Cc8C2Df752FeA22476b8fF520a532b6e"
+  },
+  "erc8004": {
+    "identityRegistry":    "0x7177a6867296406881E20d6647232314736Dd09A",
+    "reputationRegistry":  "0xB5048e3ef1DA4E04deB6f7d0423D06F63869e322",
+    "validationRegistry":  "0x662b40A526cb4017d947e71eAF6753BF3eeE66d8",
+    "network": "base-sepolia"
+  },
+  "subAgents": [
+    {
+      "name": "AgentB-DataFetcher",
+      "capabilities": ["web-search", "data-fetch", "url-scrape"],
+      "endpoint": "https://topq-agenthire-protocol.hf.space/b",
+      "priceEth": 0.001
+    },
+    {
+      "name": "AgentC-Writer",
+      "capabilities": ["summarization", "report-writing", "text-analysis"],
+      "endpoint": "https://topq-agenthire-protocol.hf.space/c",
+      "priceEth": 0.0005
+    }
+  ],
+  "techStack": {
+    "language": "Python 3.11",
+    "framework": "FastAPI",
+    "blockchain": "Base Sepolia (Chain ID: 84532)",
+    "smartContracts": "Solidity 0.8.24",
+    "deployment": "Hugging Face Spaces (Docker)"
+  },
+  "computeConstraints": {
+    "maxBudgetEth": 0.01,
+    "maxSubTasks": 10,
+    "timeoutSeconds": 30
+  },
+  "safety": {
+    "guardrails": [
+      "budget_cap",
+      "input_validation",
+      "output_proof_hash",
+      "no_private_key_exposure",
+      "max_subtask_limit"
+    ],
+    "disallowedOperations": [
+      "privateKeyAccess",
+      "externalCodeExecution",
+      "uncheckedETHTransfer",
+      "unauthorizedRegistryWrite"
+    ]
+  },
+  "protocol": "AgentHire/1.0",
+  "license": "MIT",
+  "repository": "https://github.com/MarcoTopq/agenthire-protocol",
+  "builtAt": "The Synthesis Hackathon 2026"
+}
