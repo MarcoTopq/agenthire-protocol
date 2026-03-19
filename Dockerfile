@@ -7,6 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY agents/ ./agents/
 COPY server.py .
+COPY agent.json .
+COPY erc8004_registration.json .
 
 ENV PORT=7860
 
